@@ -1,21 +1,40 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title>Résolveur d'Équations Simple</title>
+    <title>Résolveur Mathématique</title>
+    <!-- Chargez math.js depuis CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/mathjs.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-        input, button { padding: 10px; font-size: 16px; }
-        #result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; min-height: 50px; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
-    <h1>Résolveur d'Équations Linéaires</h1>
-    <p>Entrez une équation simple (ex: "3x + 5 = 20") :</p>
-    <input type="text" id="equation" size="30" placeholder="3x + 5 = 20">
-    <button onclick="solveEquation()">Résoudre</button>
+    <h1>Résolveur d'Équations</h1>
+    <p>Entrez une expression mathématique (ex: "2+3*4", "x^2-4=0") :</p>
+    <input type="text" id="equation" size="40" placeholder="3x + 5 = 20">
+    <button onclick="solve()">Calculer</button>
     <div id="result"></div>
 
     <script>
-        function solveEquation() {
+        // Créez un scope séparé pour math.js
+        const math = mathjs();
+        
+        function solve() {
             const equation = document.getElementById("equation").value.trim();
             const resultDiv = document.getElementById("result");
             
@@ -25,46 +44,29 @@
             }
 
             try {
-                // Solution pour équations du type ax + b = c
-                const parts = equation.split('=');
-                if (parts.length !== 2) throw new Error("Format d'équation invalide");
+                // Transforme l'équation en expression évaluable
+                const expr = equation.includes('=') 
+                    ? equation.replace('=', '-(') + ')' 
+                    : equation;
                 
-                const leftPart = parts[0].trim();
-                const rightPart = parts[1].trim();
+                // Évalue l'expression
+                const result = math.evaluate(expr);
                 
-                // Extraction des coefficients
-                let a = 0, b = 0;
-                const leftTerms = leftPart.split(/([+-])/);
-                
-                for (let i = 0; i < leftTerms.length; i++) {
-                    const term = leftTerms[i].trim();
-                    if (term.includes('x')) {
-                        a += parseTerm(term.replace('x', ''));
-                    } else if (term !== '+' && term !== '-' && term !== '') {
-                        b += parseTerm(term);
-                    }
+                // Affiche le résultat
+                if (equation.includes('=')) {
+                    resultDiv.innerHTML = `<p>Solution : <strong>x = ${result}</strong></p>`;
+                } else {
+                    resultDiv.innerHTML = `<p>Résultat : <strong>${result}</strong></p>`;
                 }
-                
-                const c = parseFloat(rightPart);
-                if (isNaN(c)) throw new Error("Côté droit invalide");
-                
-                if (a === 0) throw new Error("Pas de terme en x trouvé");
-                
-                const solution = (c - b) / a;
-                resultDiv.innerHTML = `<p>Solution : <strong>x = ${solution}</strong></p>`;
-                
             } catch (e) {
                 resultDiv.innerHTML = `<p style='color:red'>Erreur : ${e.message}<br>
-                Format attendu : "ax + b = c" (ex: 2x + 5 = 11)</p>`;
+                Exemples valides:<br>
+                • 2+3*4<br>
+                • 3x+5=20<br>
+                • x^2-4=0</p>`;
             }
-        }
-        
-        function parseTerm(term) {
-            if (term === '+') return 1;
-            if (term === '-') return -1;
-            if (term === '') return 1;
-            return parseFloat(term);
         }
     </script>
 </body>
 </html>
+
