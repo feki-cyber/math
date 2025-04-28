@@ -1,25 +1,69 @@
 <html>
 <head>
-    <title>Résolveur Mathématique</title>
-    <!-- Charge math.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/mathjs.min.js"></script>
+    <title>Résolveur d'Équations Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        input, button { padding: 10px; font-size: 16px; }
+        #result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; min-height: 50px; }
+    </style>
 </head>
 <body>
-    <input type="text" id="equation" placeholder="Entrez une équation (ex: 2+3*x=8)">
-    <button onclick="solve()">Résoudre</button>
+    <h1>Résolveur d'Équations Linéaires</h1>
+    <p>Entrez une équation simple (ex: "3x + 5 = 20") :</p>
+    <input type="text" id="equation" size="30" placeholder="3x + 5 = 20">
+    <button onclick="solveEquation()">Résoudre</button>
     <div id="result"></div>
 
     <script>
-        function solve() {
-            const equation = document.getElementById("equation").value;
-            try {
-                // Transforme l'équation en expression évaluable
-                const expr = equation.replace(/=/g, "-(") + ")";
-                const result = math.evaluate(expr);
-                document.getElementById("result").innerHTML = `Solution : x = ${-result}`;
-            } catch (e) {
-                document.getElementById("result").innerHTML = "Erreur : " + e.message;
+        function solveEquation() {
+            const equation = document.getElementById("equation").value.trim();
+            const resultDiv = document.getElementById("result");
+            
+            if (!equation) {
+                resultDiv.innerHTML = "<p style='color:red'>Veuillez entrer une équation</p>";
+                return;
             }
+
+            try {
+                // Solution pour équations du type ax + b = c
+                const parts = equation.split('=');
+                if (parts.length !== 2) throw new Error("Format d'équation invalide");
+                
+                const leftPart = parts[0].trim();
+                const rightPart = parts[1].trim();
+                
+                // Extraction des coefficients
+                let a = 0, b = 0;
+                const leftTerms = leftPart.split(/([+-])/);
+                
+                for (let i = 0; i < leftTerms.length; i++) {
+                    const term = leftTerms[i].trim();
+                    if (term.includes('x')) {
+                        a += parseTerm(term.replace('x', ''));
+                    } else if (term !== '+' && term !== '-' && term !== '') {
+                        b += parseTerm(term);
+                    }
+                }
+                
+                const c = parseFloat(rightPart);
+                if (isNaN(c)) throw new Error("Côté droit invalide");
+                
+                if (a === 0) throw new Error("Pas de terme en x trouvé");
+                
+                const solution = (c - b) / a;
+                resultDiv.innerHTML = `<p>Solution : <strong>x = ${solution}</strong></p>`;
+                
+            } catch (e) {
+                resultDiv.innerHTML = `<p style='color:red'>Erreur : ${e.message}<br>
+                Format attendu : "ax + b = c" (ex: 2x + 5 = 11)</p>`;
+            }
+        }
+        
+        function parseTerm(term) {
+            if (term === '+') return 1;
+            if (term === '-') return -1;
+            if (term === '') return 1;
+            return parseFloat(term);
         }
     </script>
 </body>
